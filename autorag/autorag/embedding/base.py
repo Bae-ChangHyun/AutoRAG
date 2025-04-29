@@ -8,6 +8,7 @@ from llama_index.core.embeddings.mock_embed_model import MockEmbedding
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.embeddings.openai import OpenAIEmbeddingModelType
 from llama_index.embeddings.ollama import OllamaEmbedding
+from llama_index.embeddings.vllm import VllmEmbedding
 from langchain_openai.embeddings import OpenAIEmbeddings
 
 from autorag import LazyInit
@@ -37,6 +38,7 @@ embedding_models = {
 	# langchain
 	"openai_langchain": LazyInit(OpenAIEmbeddings),
 	"ollama": LazyInit(OllamaEmbedding),
+	"vllm": LazyInit(VllmEmbedding),
 }
 
 try:
@@ -97,7 +99,7 @@ class EmbeddingModel:
 		def _check_keys(target: dict):
 			if "type" not in target or "model_name" not in target:
 				raise ValueError("Both 'type' and 'model_name' must be provided")
-			if target["type"] not in ["openai", "huggingface", "mock", "ollama"]:
+			if target["type"] not in ["openai", "huggingface", "mock", "ollama", "vllm"]:
 				raise ValueError(
 					f"Embedding model type '{target['type']}' is not supported"
 				)
@@ -122,6 +124,7 @@ class EmbeddingModel:
 			"mock": MockEmbeddingRandom,
 			"huggingface": _get_huggingface_class(),
 			"ollama": OllamaEmbedding,
+			"vllm": VllmEmbedding,
 		}
 
 		embedding_class = embedding_map.get(model_type)
