@@ -15,6 +15,7 @@ from langchain_community.document_loaders import (
 	UnstructuredXMLLoader,
 	DirectoryLoader,
 )
+from langchain_docling import DoclingLoader
 from langchain_unstructured import UnstructuredLoader
 from langchain_upstage import UpstageDocumentParseLoader
 
@@ -45,6 +46,7 @@ parse_modules = {
 	"pypdf": PyPDFLoader,
 	"pymupdf": PyMuPDFLoader,
 	"unstructuredpdf": UnstructuredPDFLoader,
+ 	'docling':DoclingLoader, 
 	# Common File Types
 	# 1. CSV
 	"csv": CSVLoader,

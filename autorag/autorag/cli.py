@@ -5,6 +5,7 @@ import pathlib
 import subprocess
 from pathlib import Path
 from typing import Optional
+from dotenv import load_dotenv
 
 import click
 import nest_asyncio
@@ -12,8 +13,11 @@ import nest_asyncio
 from autorag import dashboard
 from autorag.deploy import extract_best_config as original_extract_best_config
 from autorag.deploy.api import ApiRunner
+from autorag.parser import Parser
+from autorag.chunker import Chunker
 from autorag.evaluator import Evaluator
 from autorag.validator import Validator
+
 
 logger = logging.getLogger("AutoRAG")
 
@@ -27,6 +31,76 @@ with open(version_file, "r") as f:
 @click.version_option(__version__)
 def cli():
 	pass
+
+@click.command()
+@click.option(
+	"--env_path",
+	type=click.Path(exists=True),
+	required=True,
+	help="Path to the YAML config file.",
+)
+@click.option(
+	"--yaml_path",
+	type=click.Path(exists=True),
+	required=True,
+	help="Path to the env file.",
+)
+@click.option(
+	"--data_glob",
+	type=str,
+	required=True,
+	help="Glob pattern to match data files (e.g., '/data/**/*.json').",
+)
+@click.option(
+"--project_dir",
+	type=click.Path(),
+	default=None,
+	help="Path to the project directory.",
+)
+@click.option(
+	"--all_files",
+	is_flag=True,
+	help="Process all files or not (default: False).",
+)
+
+def parse(yaml_path, data_glob, project_dir, all_files):
+	"""Run the parser with the given YAML config and data path."""
+	parser = Parser(data_glob, project_dir)
+	parser.start_parsing(yaml_path, all_files=all_files)
+	logger.info("Parsing completed successfully.")
+cli.add_command(parse, "parse")
+
+@click.command()
+@click.option(
+	"--env_path",
+	type=click.Path(exists=True),
+	required=True,
+	help="Path to the YAML config file.",
+)
+@click.option(
+	"--yaml_path",
+	type=click.Path(exists=True),
+	required=True,
+	help="Path to the env file.",
+)
+@click.option(
+	"--parsed_data_path",
+	type=str,
+	required=True,
+	help="Glob pattern to match data files (e.g., '/data/**/*.json').",
+)
+@click.option(
+	"--project_dir",
+	type=click.Path(),
+	default=None,
+	help="Path to the project directory.",
+)
+def chunk(yaml_path, parsed_data_path, project_dir):
+	"""Run the chunker with the given YAML config and data path."""
+	chunker = Chunker.from_parquet(parsed_data_path=parsed_data_path, project_dir=project_dir)
+	chunker.start_chunking(yaml_path)
+	logger.info("Chunking completed successfully.")
+	cli.add_command(chunk, "chunk")
 
 
 @click.command()
